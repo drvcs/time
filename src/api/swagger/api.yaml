@@ -1,0 +1,225 @@
+swagger: '2.0'
+info:
+  x-ibm-name: deudas
+  title: Deudas
+  version: 1.0.0
+  description: >-
+    # Objetivo del API REST
+
+
+    Servicio que agrupa las operaciones sobre la estructura "deudas" en base de
+    datos.
+
+    Permite construir deudas, consultar las deudas y obtener detalles de una
+    deuda
+
+    El contexto de deudas siempre implica una autenticación que limita las
+    deudas a un cliente de la organización
+
+
+
+
+
+    ## Design Principles
+
+    ### RESTful APIs
+
+    The API adheres to RESTful API concepts where possible and sensible to do
+    so.
+
+
+    However, the priority is to have an API that is simple to _understand_ and
+    _easy_ to use. In instances where following RESTful principles would be
+    convoluted and complex, the principles have not been followed.
+
+
+    ### References:
+
+
+    * The highest level Data Description Language used is the JSON Schema :
+    http://json-schema.org/
+
+    * Best Practice has also been taken from the Data Description Language for
+    APIs; JSON API : http://jsonapi.org/
+
+    * The Interface Description Language used is the Swagger Specification
+    version 2.0 (also known as Open API) : http://swagger.io/ 
+schemes:
+  - https
+#host: $(catalog.host)
+basePath: /serviciodeudas
+consumes:
+  - application/json
+produces:
+  - application/json
+securityDefinitions:
+  autenticacion-usuario:
+    type: basic
+    description: el usuario envía su userid y password
+  clientIdHeader:
+    type: apiKey
+    in: header
+security:
+    name: X-IBM-Client-Id
+x-ibm-configuration:
+  testable: true
+  enforced: true
+  cors:
+    enabled: true
+  assembly:
+    execute:
+      - invoke:
+          target-url: $(target-url)$(request.path)
+paths:
+  /deudas:
+    get:
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Deuda'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Error'
+        '500':
+          description: error de sistema
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Error'
+      summary: Consulta de todas las deudas activas del usuario autenticado
+      description: Obtiene todas las deudas de la tabla.
+      deprecated: false
+      operationId: all
+      
+  '/deudas/{id-deuda}':
+    get:
+      responses:
+        '200':
+          description: OK
+          parameters:
+            $ref: '#/definitions/DeudaDetalle'
+          schema:
+            $ref: '#/definitions/DeudaDetalle'
+        '404':
+          description: deuda inexistente
+          schema:
+            $ref: '#/definitions/Error'
+        '500':
+          description: error de sistema
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Error'
+      description: ''
+      deprecated: false
+      operationId: getById
+      summary: >-
+        Obtiene la deuda dado el id. Se verifica que la deuda sea del usuario
+        autenticado.
+    parameters:
+      - name: id-deuda
+        type: string
+        required: true
+        in: path
+        description: identificador unico de la deuda
+  '/deudas/{id-deuda}/pagos':
+    get:
+      responses:
+        '200':
+          description: 200 OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Pago'
+        '500':
+          description: error de sistema
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Error'
+definitions:
+  Deuda:
+    properties:
+      id-deuda:
+        type: integer
+        format: int32
+        example: '19'
+      tipo:
+        type: string
+        example: Crédito
+      monto-original:
+        type: number
+        format: double
+        example: 2000000
+      creacion-fecha:
+        type: string
+        format: date-time
+        example: '2018-10-17'
+      saldo:
+        type: number
+        format: double
+        example: 1500000
+      deudor-cedula:
+        type: string
+        example: '123456789'
+    additionalProperties: false
+    description: >-
+      Entidad Deuda: valores básicos de la deuda que se incluyen en la lista de
+      deudas
+    required:
+      - id-deuda
+  Error:
+    description: Entidad de error. Adopta JSON-API
+    type: object
+    properties:
+      code:
+        type: string
+      source:
+        type: object
+        properties:
+          pointer:
+            type: string
+      title:
+        type: string
+      detail:
+        type: string
+    example: " {\r\n      \"code\":   \"123\",\r\n      \"source\": { \"pointer\": \"/data/attributes/firstName\" },\r\n      \"title\":  \"Value is too short\",\r\n      \"detail\": \"First name must contain at least three characters.\"\r\n    }"
+  DeudaDetalle:
+    properties:
+      datos-basicos:
+        $ref: '#/definitions/Deuda'
+      monto-pagado:
+        type: number
+        format: double
+        example: 1950000
+      ultimo-pago-fecha:
+        type: string
+        format: date
+        example: '2018-12-09'
+      final-pago-fecha:
+        type: string
+        format: date
+        example: '2018-06-12'
+    additionalProperties: true
+    description: Detalle extendido de una deuda.
+    required:
+      - datos-basicos
+  Pago:
+    properties:
+      pago-fecha:
+        type: string
+        format: date
+        example: '2016-03-24'
+      monto:
+        type: number
+        format: double
+        example: 1250100
+      descripcion:
+        type: string
+    additionalProperties: false
+    description: 'Entidad pago: Describe un pago realizado asociado a una deuda.'
+tags: []
