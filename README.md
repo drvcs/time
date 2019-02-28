@@ -1,14 +1,5 @@
 # ck-time
 
-# Objetivo del API REST
-
-Servicio que agrupa las operaciones sobre la estructura &#34;deudas&#34; en base de datos.
-Permite construir deudas, consultar las deudas y obtener detalles de una deuda
-El contexto de deudas siempre implica una autenticación que limita las deudas a un cliente de la organización
-
-
-
-
 ## Design Principles
 ### RESTful APIs
 The API adheres to RESTful API concepts where possible and sensible to do so.
